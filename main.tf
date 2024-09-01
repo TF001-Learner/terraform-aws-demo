@@ -1,19 +1,26 @@
-# Configure the AWS Provider
-provider "aws" {
-  region = "us-east-1"
-}
-
-# Create an EC2 instance
-resource "aws_instance" "example" {
-  ami           = "ami-0c55b159cbfafe1f0"  # Amazon Linux 2 AMI ID for us-east-1
-  instance_type = "t2.micro"
+resource "aws_s3_bucket" "example_bucket" {
+  bucket = "my-terraform-demo-bucket-12345"  # Replace with a unique name
 
   tags = {
-    Name = "TerraformDemoInstance"
+    Name = "My Terraform Demo Bucket"
   }
 }
 
-# Output the instance ID
-output "instance_id" {
-  value = aws_instance.example.id
+resource "aws_s3_bucket_ownership_controls" "example_bucket_ownership" {
+  bucket = aws_s3_bucket.example_bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_acl" "example_bucket_acl" {
+  depends_on = [aws_s3_bucket_ownership_controls.example_bucket_ownership]
+
+  bucket = aws_s3_bucket.example_bucket.id
+  acl    = "private"
+}
+
+output "bucket_name" {
+  value = aws_s3_bucket.example_bucket.id
 }
